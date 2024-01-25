@@ -164,7 +164,7 @@ float b[], r[];
               //printf("r[%d] = %e\n", i, r[i]);
             }
         /***  Back solution  ***/
-          r[neq-1] = r[neq-1] / b[(neq-1)*mdim+ihbp];
+          r[neq] = r[neq] / b[(neq)*mdim+ihbp];
           //printf("r[%d] = %f\n", neq, r[neq]);
           for ( iback = 2; iback <= neq; iback++ )
             {
@@ -193,7 +193,7 @@ float b[], r[];
       FILE *fp;
       printf("writing to %s\n", buf);
       fp = fopen(buf, "w");
-      for(int ii=0; ii<neq; ii++){
+      for(int ii=1; ii<=neq; ii++){
         fprintf(fp, "%f\n", r[ii]);
         //printf("%f\n", r[i]);
       }

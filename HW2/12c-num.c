@@ -19,7 +19,7 @@ int nodemap(int i, int j, int N);
 
 int main (void) {
 
-int NRange[] = {5};
+int NRange[] = {240};
 
 for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
   int N;
@@ -47,14 +47,12 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
 
   ///////////////////////////////////////////////////////////////////////////
   //// make b vector
-  float B[n];
-  for(int i=0; i<N; i++){
-    for(int j=0; j<N; j++){
-      B[nodemap(i, j, N)] = 0;
-    }
+  float B[n+1];
+  for(int i=0; i<n+1; i++){
+    B[i] = 0;
   }
-  for(int i=N-1; i<n; i+=N){
-    B[i] = cos(k_param*theta[(i+1)/N - 1]) * (delR + 1);
+  for(int i=N; i<=n; i+=N){
+    B[i] = cos(k_param*theta[i/N - 1]) * (delR + 1);
   }
 
   /*write b vector to file
@@ -71,15 +69,15 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
   
   /////////////////////////////////////////////////////////////////////////
   //// make A matrix
-  float A[n][2*N+1];
-  for(int i=0; i<n; i++){
-    for(int j=0; j<2*N+1; j++){
+  float A[n+1][2*N+2];
+  for(int i=0; i<n+1; i++){
+    for(int j=0; j<2*N+2; j++){
       A[i][j] = 0;
     }
   }
   float a, b, c, d;
   float rVal;
-  int row, center, rPlus, rMinus, thetaPlus, thetaMinus;
+  int rowCondition, row, center, rPlus, rMinus, thetaPlus, thetaMinus;
   //iterate over all nodes, check for boundary conditions
   for (int j=0; j<N; j++){
     for(int i=0; i<N; i++){
@@ -90,37 +88,39 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
       c = 1 - delR/(2*rVal);
       d = beta / (rVal*rVal);
 
-      row = nodemap(i, j, N);
+      //// Note: Added +1 to all indices to account for empty rows and columns
+      rowCondition = nodemap(i, j, N);
+      row = nodemap(i, j, N) + 1; //Added +1 to account for empty rows
       //printf("row: %d\n", row);
       // For Banded Storage Mode 2 for A, A is n x 2N+1. Center of molecule is at index=N.
-      center = N;
-      rPlus = center + 1;
-      rMinus = center - 1;
-      thetaPlus = center + N;
-      thetaMinus = center - N;
+      center = N + 1; //Added +1 to account for empty columns
+      rPlus = (center + 1);
+      rMinus = (center - 1);
+      thetaPlus = (center + N);
+      thetaMinus = (center - N);
 
-      if(row == 0){    //Type II corner
+      if(rowCondition == 0){    //Type II corner
         A[row][center] = a;
         A[row][rPlus] = 2*b;
         A[row][thetaPlus] = 2*d;
         //printf("Corner\n");
       }
-      else if(row >= n-N){   //Boundary I
+      else if(rowCondition >= n-N){   //Boundary I
         A[row][center] = 1;
         //printf("Boundary I\n");
       }
-      else if(row > 0 && row < N-1){    //Boundary III
+      else if(rowCondition > 0 && rowCondition < N-1){    //Boundary III
         A[row][center] = a;
         A[row][rPlus] = b;
         A[row][rMinus] = c;
         A[row][thetaPlus] = 2*d;
         //printf("Boundary III\n");
       }
-      else if((row+1) % N == 0){   //Boundary IV
+      else if((rowCondition+1) % N == 0){   //Boundary IV
         A[row][center] = 1;
         //printf("Boundary IV\n");
       }
-      else if(row% N == 0){  //Boundary II
+      else if(rowCondition % N == 0){  //Boundary II
         A[row][center] = a;
         A[row][rPlus] = 2*b;
         A[row][thetaPlus] = d;
@@ -138,20 +138,20 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
     }
   }
 
-/*write A matrix to file*/
+/*write A matrix to file
   FILE *file;
   file = fopen("A.txt", "w");
   if(file == NULL){
     printf("Error opening file for B\n");
     return 1;
   }
-  for(int i=0; i<n; i++){
-    for(int j=0; j<2*N+1; j++){
+  for(int i=0; i<n+1; i++){
+    for(int j=0; j<2*N+2; j++){
       fprintf(file, "%f\t", A[i][j]);
     }
     fprintf(file, "\n");
   }
-  fclose(file);
+  fclose(file);*/
 
 
   /////////////////////////////////////////////////////////////////////////
@@ -201,14 +201,14 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
     fprintf(file, "\n");
   }
   fclose(file);*/
-  
+  /*
   float A_banded_vector[n*(2*N+1)+1];
   A_banded_vector[0] = 0;
   for(int i=0; i<n; i++){
     for(int j=0; j<2*N+1; j++){
       A_banded_vector[i*(2*N+1) + j + 1] = A[i][j];
     }
-  }
+  }*/
   /*write A_banded_vector to file
   file = fopen("A_banded_vector.txt", "w");
   if(file == NULL){
@@ -220,7 +220,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
   }
   fclose(file);*/
 
-  solve1(3, A_banded_vector, B, n, N, 2*N+1);
+  solve1(3, A, B, n, N, 2*N+2);
   /*
   //write x vector to file
   file = fopen("x.txt", "w");
