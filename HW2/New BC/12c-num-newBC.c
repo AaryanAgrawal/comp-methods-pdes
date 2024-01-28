@@ -31,7 +31,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
   float a_param = 0.1;
   int R_param = 1;
   int k_param = 3;
-  float A_param = 1;
+  float A_param = 1000000;
   int D_param = -3;
 
   //define spacing
@@ -57,7 +57,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
     B[i] = - 2 * D_param * beta * delTheta / radius[i-(n-N+1)];
   }
   for(int i=N; i<=n; i+=N){   // Boundary IV
-    B[i] = cos(k_param*theta[i/N - 1]) * (delR + 1);
+    B[i] = cos(k_param*theta[i/N - 1]) * (delR/2 + 1);
   }
 
   /*write b vector to file
@@ -108,7 +108,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
 
       if(rowCondition == 0){    //Type II corner
         A[row][center] = a;
-        A[row][rPlus] = 2*b;
+        A[row][rPlus] = 2;
         A[row][thetaPlus] = 2*d;
         //printf("Corner\n");
       }
@@ -132,7 +132,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
       }
       else if(rowCondition % N == 0){  //Boundary II
         A[row][center] = a;
-        A[row][rPlus] = 2*b;
+        A[row][rPlus] = 2;
         A[row][thetaPlus] = d;
         A[row][thetaMinus] = d;
         //printf("Boundary II\n");
@@ -165,7 +165,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
 
   /////////////////////////////////////////////////////////////////////
 
-  solve1(3, A, B, n, N, 2*N+2, 11);
+  solve1(3, A, B, n, N, 2*N+2, A_param);
   
   /*
   //write x vector to file
