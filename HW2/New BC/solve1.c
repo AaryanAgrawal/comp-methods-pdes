@@ -189,7 +189,7 @@ float b[], r[];
       char buf[0x100];
       char stext[0x100];
       itoa(text, stext, 10);
-      snprintf(buf, sizeof(buf), "%s.txt", stext);
+      snprintf(buf, sizeof(buf), "iter%s.txt", stext);
       FILE *fp;
       printf("writing to %s\n", buf);
       fp = fopen(buf, "w");
