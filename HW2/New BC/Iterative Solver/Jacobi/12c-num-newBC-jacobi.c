@@ -169,14 +169,14 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
           //printf("U1[%d] = %lf\t bij = %lf\n", row, U1[row], bij);
         }
       }
-      
+
       double diff_vector[n];
       for(int i = 0; i<n; i++){
         diff_vector[i] = fabs(U1[i] - U0[i]);
       }
       crit = diff_vector[vector_max(diff_vector, n)];
       //printf("crit = %.8e\n", crit);
-      
+
       //jacobiRMS[iterationCnt] = vector_rms(diff_vector, n);
       iterationCnt++;
 
@@ -186,7 +186,7 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
     }
 
     printf("iterationCnt = %d\n", iterationCnt);
-    
+
     //write U to file
     char buf[0x100];
     char sN[0x100];
