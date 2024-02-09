@@ -53,7 +53,7 @@ for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
     B[i] = 0;
   }
   for(int i=N; i<=n; i+=N){
-    B[i] = cos(k_param*theta[i/N - 1]);
+    B[i] = - cos(k_param*theta[i/N - 1]);
   }
 
   //write b vector to file

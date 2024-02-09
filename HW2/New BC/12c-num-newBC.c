@@ -20,7 +20,7 @@ int nodemap(int i, int j, int N);
 int main (void) {
 
 int NRange[] = {100};
-int ARange[] = {0, 1, 100};
+int ARange[] = {991, 5, 1000};
 
 for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
   for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
@@ -34,8 +34,12 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
     int R_param = 1;
     int k_param = 3;
     float A_param = ARange[jj];
-    if(A_param == 0){
+    int A_text = A_param;
+    if(A_param == 991){
       A_param = 0.001;
+    }
+    if(A_param == 91){
+      A_param = 0.1;
     }
     int D_param = -3;
 
@@ -62,7 +66,7 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
       B[i] = - 2 * D_param * beta * delTheta / radius[i-(n-N+1)];
     }
     for(int i=N; i<=n; i+=N){   // Boundary IV
-      B[i] = cos(k_param*theta[i/N - 1]) * (delR/2 + 1);
+      B[i] = - cos(k_param*theta[i/N - 1]) * (delR/2 + 1);
     }
 
     /*write b vector to file
@@ -170,7 +174,7 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
 
     /////////////////////////////////////////////////////////////////////
 
-    solve1(3, A, B, n, N, 2*N+2, A_param);
+    solve1(3, A, B, n, N, 2*N+2, A_text);
     
     /*
     //write x vector to file

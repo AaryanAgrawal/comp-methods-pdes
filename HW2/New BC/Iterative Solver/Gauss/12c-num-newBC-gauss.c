@@ -17,13 +17,17 @@ Solve PDE using FD molecule over polar grid
 int nodemap(int i, int j, int N);
 int vector_max(double A[], int n);
 float vector_rms(double A[], int n);
+float vector_norm(double A[], int n);
 
 int main (void) {
 
-int NRange[] = {10, 20, 40, 100};
-float ARange[] = {0.001, 1, 100};
+int NRange[] = {10, 20, 40};
+int ARange[] = {991, 5, 1000};
 for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
   float A_param = ARange[jj];
+  if(ARange[jj] == 991){
+    A_param = 0.001;
+  }
   printf("A = %f\n", A_param);
   for(int ii=0; ii < (int)sizeof(NRange)/sizeof(NRange[0]); ii++){
     FILE *file;
@@ -61,7 +65,7 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
       B[i] = - 2 * D_param * beta * delTheta / radius[i-(n-N)];
     }
     for(int i=N-1; i<n; i+=N){    // Boundary IV
-      B[i] = cos(k_param*theta[(i+1)/N - 1]) * (delR/2 + 1);
+      B[i] = - cos(k_param*theta[(i+1)/N - 1]) * (delR/2 + 1);
     }
 
     //write b vector to file
@@ -79,21 +83,24 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
     //// Iterative Solve
 
     // Make initial guess
-    double U0[n];
-    double U1[n];
+    double U0[n], UMinus1[n];
     for(int i=0; i<n; i++){
       U0[i] = 0;
-      U1[i] = 0;
+      UMinus1[i] = 0;
     }
+    double U1[n];
 
     double a, b, c, d;
     double rVal;
     double beta0, beta1, beta2, beta3, beta4, bij;
+    float spectral_radius[10000];
+    double diff_vector[n], diff_vector_previous[n];
     int row, rPlus, rMinus, thetaPlus, thetaMinus;
     int iterationCnt = 0;
     float jacobiRMS[10000];
     for(int i=0; i<10000; i++){
       jacobiRMS[i] = 0.0;
+      spectral_radius[i] = 0.0;
     }
     //iterate over all nodes, check for boundary conditions
 
@@ -170,34 +177,38 @@ for(int jj=0; jj < (int)sizeof(ARange)/sizeof(ARange[0]); jj++){
           //printf("U1[%d] = %lf\t bij = %lf\n", row, U1[row], bij);
         }
       }
-      
-      double diff_vector[n];
+
       for(int i = 0; i<n; i++){
         diff_vector[i] = fabs(U1[i] - U0[i]);
       }
       crit = diff_vector[vector_max(diff_vector, n)];
       //printf("crit = %.8e\n", crit);
-      
-      //jacobiRMS[iterationCnt] = vector_rms(diff_vector, n);
+
+      for(int i = 0; i<n; i++){
+      diff_vector_previous[i] = fabs(UMinus1[i] - U0[i]);
+      }
+      spectral_radius[iterationCnt] = vector_norm(diff_vector, n)/vector_norm(diff_vector_previous, n);
       iterationCnt++;
 
       for(int k=0; k<n; k++){
+        UMinus1[k] = U0[k];
         U0[k] = U1[k];
       }
     }
 
+    float mean_spectral_radius = 0;
+    for(int i=1; i<iterationCnt; i++){
+      mean_spectral_radius += spectral_radius[i];;
+    }
+    mean_spectral_radius = mean_spectral_radius/(iterationCnt-1);
     printf("iterationCnt = %d\n", iterationCnt);
+    printf("Spectral Radius = %f\n", mean_spectral_radius);
 
     //write U to file
     char buf[0x100];
     char sN[0x100];
     char sA[0x100];
-    if(A_param==0.01){
-      printf("A = 0.01\n");
-      itoa(91, sA, 10);
-    } else{
-    itoa((int)A_param, sA, 10);
-    }
+    itoa((int)ARange[jj], sA, 10);
     itoa(N, sN, 10);
     snprintf(buf, sizeof(buf), "N%s_A%s.txt", sN, sA);
     printf("writing to %s\n", buf);
@@ -244,4 +255,12 @@ float vector_rms(double A[], int n){
     sum += (float)(A[i]*A[i]);
   }
   return sqrt(sum/n);
+}
+
+float vector_norm(double A[], int n){
+  float sum = 0;
+  for(int i=0; i<n; i++){
+    sum += (float)(A[i]*A[i]);
+  }
+  return sqrt(sum);
 }
