@@ -13,7 +13,7 @@ Utility Functions for time transient analysis of finite-difference molecules A &
 #include <math.h>
 #include "solve1.h"
 
-void applyMoleculeA(double U0[], double U1[], double U2[], int N, double r){
+void applyMoleculeA(float U0[], float U1[], float U2[], int N, float r){
   //Increments a time step for Molecule A
   for(int i=1; i<N-1; i++){
     U2[i] = (1.5*r) * (U1[i-1]+U1[i+1]) + (1.0-3.0*r) * U1[i];  // l time level
@@ -23,18 +23,18 @@ void applyMoleculeA(double U0[], double U1[], double U2[], int N, double r){
   U2[N-1] = U1[N-1];
 }
 
-void applyMoleculeB(double U0[], double U1[], double U2[], int N, double r){
+void applyMoleculeB(float U0[], float U1[], float U2[], int N, float r){
   //Increments a time step for Molecule B
-  double bij;
-  double beta0 = - (1.0 + 5.0*r/6.0);
-  double beta1 = -5.0*r/12.0;
-  double beta2 = -5.0*r/12.0;
-  double crit = 10.0;
-  double diff_vector[N];
-  double tol = 1e-6;
+  float bij;
+  float beta0 = - (1.0 + 5.0*r/6.0);
+  float beta1 = -5.0*r/12.0;
+  float beta2 = -5.0*r/12.0;
+  float crit = 10.0;
+  float diff_vector[N];
+  float tol = 1e-6;
   int iterationCnt = 0;
   //Make Initial Guess
-  double UGuess[N];
+  float UGuess[N];
   for(int i=0; i<N; i++){
     UGuess[i] = U1[i];
   }
@@ -62,15 +62,15 @@ void applyMoleculeB(double U0[], double U1[], double U2[], int N, double r){
   //printf("iterationCnt = %d\n", iterationCnt);
 }
 
-void printSolutionToFile(double U[], int N, FILE *file){
+void printSolutionToFile(float U[], int N, FILE *file){
   //Prints solution to file - columns are nodes, rows are time steps
   for(int i=0; i<N; i++){
-    fprintf(file, "%.15le\t", U[i]);
+    fprintf(file, "%.8le\t", U[i]);
   }
   fprintf(file, "\n");
 }
 
-void shiftTimeLevels(double U0[], double U1[], double U2[], int N){
+void shiftTimeLevels(float U0[], float U1[], float U2[], int N){
   //Shifts time levels for U0, U1, and U2
   for(int i=0; i<N; i++){
     U0[i] = U1[i];
@@ -78,7 +78,7 @@ void shiftTimeLevels(double U0[], double U1[], double U2[], int N){
   }
 }
 
-void boundaryConditions(double U0[], double U1[], int N){
+void boundaryConditions(float U0[], float U1[], int N){
   //Applies boundary conditions to U0 and U1
   U0[0] = 0;
   U0[N-1] = 0;
@@ -86,7 +86,7 @@ void boundaryConditions(double U0[], double U1[], int N){
   U1[N-1] = 0;
 }
 
-void initialConditions(double U0[], double U1[], int N, double x[], float x0_param, float sigma_param){
+void initialConditions(float U0[], float U1[], int N, float x[], float x0_param, float sigma_param){
   //Applies initial conditions to U0 and U1
   for(int i=0; i<N; i++){
     U0[i] = exp(-(x[i] - x0_param)*(x[i] - x0_param)/(2*sigma_param*sigma_param));
@@ -94,8 +94,8 @@ void initialConditions(double U0[], double U1[], int N, double x[], float x0_par
   }
 }
 
-int vector_max(double A[], int n){
-  double max = fabs(A[0]);
+int vector_max(float A[], int n){
+  float max = fabs(A[0]);
   int maxIndex = 0;
   for(int i=0; i<n; i++){
     if(fabs(A[i]) > max){
